@@ -2,6 +2,7 @@ clear all;
 close all;
 clc;
 fileID = fopen('test.txt','r');
+fileID2 = fopen('output.txt','w');
 [maxcolumnsnum,Environment,initialstate,finalstate]=ReadFile(fileID);
 fclose(fileID);
 k = size(Environment,2);
@@ -123,7 +124,15 @@ while (endflag==0)
                         newplan = [oldplan {operator.Id}];
                         newplanM = [newplanM {newplan}];
                         plans = [plans {newplan}];
+                    else
+                        fprintf(fileID2,'%s\n',trialState.OrdId);
+                        fprintf(fileID2,'%s\n','Repeated State');
+                        fprintf(fileID2,'%s\n','-------------------------');
                     end
+                else
+                        fprintf(fileID2,'%s\n',trialState.OrdId);
+                        fprintf(fileID2,'%s\n','Contradictory Predicates');
+                        fprintf(fileID2,'%s\n','-------------------------');
                 end
                 
             end
@@ -134,3 +143,19 @@ while (endflag==0)
     oldplanM = newplanM;
     newplanM = {};
 end
+
+fclose(fileID2);
+text = fileread('output.txt');
+fileID3 = fopen('output.txt','w');
+plan = fliplr(plans{endflag});
+planv = [];
+fprintf(fileID3,'%i\n', size(plan,2)-1);
+fprintf(fileID3,'%i\n',size(visitedstates,2));
+for i = 1:size(plan,2)-2
+    planv = [planv plan{i} ', '];
+end
+planv = [planv plan{end-1}];
+fprintf(fileID3,'%s\n',planv);
+fprintf(fileID3,'%s\n','-------------------------');
+dlmwrite('output.txt', text, '-append','delimiter', '');
+fclose(fileID3);
