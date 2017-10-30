@@ -1,161 +1,75 @@
+
 clear all;
-close all;
+close all; 
 clc;
-fileID = fopen('test.txt','r');
-fileID2 = fopen('output.txt','w');
-[maxcolumnsnum,Environment,initialstate,finalstate]=ReadFile(fileID);
-fclose(fileID);
-k = size(Environment,2);
-endflag = 0;
-sfinal = STATE(finalstate);
-sinitial = STATE(initialstate);
-visitedstates = {sfinal};
-oldstates = {sfinal};
-newstates = {};
-oldplanM = {'Final State'};
-newplanM = {};
-plans = {'Final State'};
-
-while (endflag==0)
-    for d = 1:size(oldstates,2)
-        sfinal = oldstates{d};
-        for w = 1:size(sfinal.Predicates,2)
-            if(strcmp(class(sfinal.Predicates{w}),'USEDCOLSNUM')==1)
-                n = sfinal.Predicates{w}.Num;
-            end
-        end
-        predsize = size(sfinal.Predicates,2);
-        opused = {};
-        oldplan = oldplanM{d};
-
-        for j = 1:predsize
-            pred = sfinal.Predicates{j};
-            oppred = {};
-            switch class(pred)
-                
-                case 'CLEAR'
-                    %disp('CLEAR')
-                    operators = pred.ADD(pred,Environment,sfinal);
-                case 'ON'
-                    %disp('ON')
-                    operators = pred.ADD(pred.Top,pred.Bot,sfinal);
-                case 'ONTABLE'
-                    %disp('ONTABLE')
-                    operators = pred.ADD(pred.Block,sfinal,n,maxcolumnsnum);
-                case 'EMPTYARM'
-                    %disp('EA')
-                    operators = pred.ADD(pred.Arm,Environment,sfinal,n,maxcolumnsnum);
-                case 'HOLDING'
-                    operators = pred.ADD(pred.Block,pred.Arm,Environment,sfinal,n,maxcolumnsnum);
-                case 'HEAVY'
-                    operators = {};
-                case 'USEDCOLSNUM'
-                    operators = {};
-                case 'LIGHTBLOCK'
-                    operators = {};
-            end
-            
-            for i = 1:size(operators,2)
-                if (size(opused,2)>0)
-                    for h = 1:size(opused,2)
-                        if (strcmp(operators{i}.Id,opused)== 0)
-                            opused = [opused {operators{i}.Id}];
-                            oppred = [oppred operators(i)];
-                        end
-                    end
-                else
-                    opused = [opused {operators{i}.Id}];
-                    oppred = [oppred operators(i)];
-                end
-                
-            end
-            for i = 1:size(oppred,2) %Provem operador per operador si hi ha incongroències.
-                operator = oppred{i};
-                newpredicates={};
-                flag = 0;
-                regfun = {};
-                for q  = 1:size(sfinal.Predicates,2)
-                    predcandidate = sfinal.Id{q};
-                    [addbool,delbool,precbool] = COMPARE(predcandidate,operator.Add,operator.Del,operator.Prec);
-                    if (addbool == 1)
-                        continue;
-                    elseif (delbool ==1)
-                        flag = 1;
-                        break;
-                    elseif (precbool == 0)
-                        regfun = [regfun {sfinal.Predicates{q}}];
-                    end
-                end
-                
-                if (flag == 0)
-                    regfun = [regfun operator.Prec];
-                    trialState = STATE(regfun);
-                    for z = 1:size(regfun,2)
-                        if (strcmp(class(regfun{z}),'LIGHTBLOCK') == 0  && strcmp(class(regfun{z}),'HEAVY') == 0 && strcmp(class(regfun{z}),'USEDCOLSNUM') == 0)
-                            flag = regfun{z}.CHECK(regfun{z},Environment,trialState);
-                            if (flag == 1)
-                                break;
-                            end
-                        end
-                        if(strcmp(class(regfun{z}),'USEDCOLSNUM') == 1)
-                            if(regfun{z}.Num>maxcolumnsnum)
-                                flag == 1;
-                                break;
-                            end
-                        end
-                    end
-                end
-                
-                if (flag == 0)
-                    acceptbool = 1;
-                    
-                    for v = 1:size(visitedstates,2)
-                        if (strcmp(visitedstates{v}.OrdId,trialState.OrdId)==1)
-                            acceptbool = 0;
-                            break;
-                        end
-                    end
-                    if (acceptbool == 1)
-                        if (strcmp(sinitial.OrdId,trialState.OrdId)==1)
-                            endflag = size(visitedstates,2)+1;
-                        end
-                        newstates = [newstates {trialState}];
-                        visitedstates = [visitedstates {trialState}];
-                        newplan = [oldplan {operator.Id}];
-                        newplanM = [newplanM {newplan}];
-                        plans = [plans {newplan}];
-                    else
-                        fprintf(fileID2,'%s\n',trialState.OrdId);
-                        fprintf(fileID2,'%s\n','Repeated State');
-                        fprintf(fileID2,'%s\n','-------------------------');
-                    end
-                else
-                        fprintf(fileID2,'%s\n',trialState.OrdId);
-                        fprintf(fileID2,'%s\n','Contradictory Predicates');
-                        fprintf(fileID2,'%s\n','-------------------------');
-                end
-                
-            end
-        end
+for i=5:5:30
+    [endflag,Environment,plans,visitedstates,totalvisitedstates]=NLPRegression('test.txt',['outputConfig1MaxColumns' num2str(i/5+1) '.txt'],i-5);
+    x(i/5,1) = size(visitedstates,2);
+    x(i/5,3) = totalvisitedstates;
+    if (endflag~=0)
+        x(i/5,2) = size(plans{endflag},2)-1;
+    else
+        x(i/5,2) = 0;
     end
-    oldstates = newstates;
-    newstates = {};
-    oldplanM = newplanM;
-    newplanM = {};
 end
 
-fclose(fileID2);
-text = fileread('output.txt');
-fileID3 = fopen('output.txt','w');
-plan = fliplr(plans{endflag});
-planv = [];
-fprintf(fileID3,'%i\n', size(plan,2)-1);
-fprintf(fileID3,'%i\n',size(visitedstates,2));
-for i = 1:size(plan,2)-2
-    planv = [planv plan{i} ', '];
+for i=35:5:60
+    [endflag,Environment,plans,visitedstates,totalvisitedstates]=NLPRegression('test.txt',['outputConfig2MaxColumns' num2str((i-30)/5+1) '.txt'],i-5);
+       y((i-30)/5,1) = size(visitedstates,2);
+       y((i-30)/5,3) = totalvisitedstates;
+    if (endflag~=0)
+        y((i-30)/5,2) = size(plans{endflag},2)-1;
+    else
+        y((i-30)/5,2) = 0;
+    end
 end
-planv = [planv plan{end-1}];
-fprintf(fileID3,'%s\n',planv);
-fprintf(fileID3,'%s\n','-------------------------');
-dlmwrite('output.txt', text, '-append','delimiter', '');
-fclose(fileID3);
+
+for i=65:5:90
+    [endflag,Environment,plans,visitedstates,totalvisitedstates]=NLPRegression('test.txt',['outputConfig3MaxColumns' num2str((i-60)/5+1) '.txt'],i-5);
+       t((i-60)/5,1) = size(visitedstates,2);
+       t((i-60)/5,3) = totalvisitedstates;
+    if (endflag~=0)
+        t((i-60)/5,2) = size(plans{endflag},2)-1;
+    else
+        t((i-60)/5,2) = 0;
+    end
+end
+
+for i=95:5:120
+    [endflag,Environment,plans,visitedstates,totalvisitedstates]=NLPRegression('test.txt',['outputConfig4MaxColumns' num2str((i-90)/5+1) '.txt'],i-5);
+       w((i-90)/5,1) = size(visitedstates,2);
+       w((i-90)/5,3) = totalvisitedstates;
+    if (endflag~=0)
+        w((i-90)/5,2) = size(plans{endflag},2)-1;
+    else
+        w((i-90)/5,2) = 0;
+    end
+end
+
+for i=125:5:150
+    [endflag,Environment,plans,visitedstates,totalvisitedstates]=NLPRegression('test.txt',['outputConfig5MaxColumns' num2str((i-120)/5+1) '.txt'],i-5);
+       h((i-120)/5,1) = size(visitedstates,2);
+       h((i-120)/5,3) = totalvisitedstates;
+    if (endflag~=0)
+        h((i-120)/5,2) = size(plans{endflag},2)-1;
+    else
+        h((i-120)/5,2) = 0;
+    end
+end
+
+z = [2,3,4,5,6,7];
+figure(1);
+plot(z,x(:,1))
+hold on
+plot(z,y(:,1))
+plot(z,t(:,1),'g')
+plot(z,w(:,1),'b')
+plot(z,h(:,1),'r')
+figure(2)
+plot(z,x(:,2))
+hold on
+plot(z,y(:,2))
+plot(z,t(:,2),'g')
+plot(z,w(:,2),'b')
+plot(z,h(:,2),'r')
+

@@ -25,7 +25,7 @@ classdef HOLDING
                 
                 for i = 1:k
                     BottomBlock = Environment(i);
-                    if (block.Weight == 1 && sum(strcmp(StateVec.Id,CLEAR(BottomBlock).Id))==1 && sum(strcmp(StateVec.Id,EMPTYARM(arm).Id))==0 && sum(strcmp(StateVec.Id,ON(block,BottomBlock).Id))==0)
+                    if (strcmp(Environment(i).Name,block.Name)==0 && block.Weight == 1 && sum(strcmp(StateVec.Id,CLEAR(BottomBlock).Id))==1 && sum(strcmp(StateVec.Id,EMPTYARM(arm).Id))==0 && sum(strcmp(StateVec.Id,ON(block,BottomBlock).Id))==0)
                         operator = [operator {UNSTACK(block,BottomBlock,arm)}];
                     end
                 end
@@ -40,7 +40,7 @@ classdef HOLDING
                 
                 for i = 1:k
                     BottomBlock = Environment(i);
-                    if (block.Weight <= BottomBlock.Weight && sum(strcmp(StateVec.Id,CLEAR(BottomBlock).Id))==1 && sum(strcmp(StateVec.Id,EMPTYARM(arm).Id))==0 && sum(strcmp(StateVec.Id,ON(block,BottomBlock).Id))==0)
+                    if (strcmp(Environment(i).Name,block.Name)==0 && block.Weight <= BottomBlock.Weight && sum(strcmp(StateVec.Id,CLEAR(BottomBlock).Id))==1 && sum(strcmp(StateVec.Id,EMPTYARM(arm).Id))==0 && sum(strcmp(StateVec.Id,ON(block,BottomBlock).Id))==0)
                         operator = [operator {UNSTACK(block,BottomBlock,arm)}];
                     end
                 end

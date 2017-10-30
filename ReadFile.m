@@ -1,5 +1,7 @@
-function [maxcolumns,Environment,initialstate,goalstate] = ReadFile(fileID)
-
+function [maxcolumns,Environment,initialstate,goalstate] = ReadFile(fileID,readlines)
+for i = 1:readlines
+    fgetl(fileID);
+end
 line = fgetl(fileID);
 linesplit = strsplit(line, '=');
 maxcolumns = str2num(linesplit{2});
