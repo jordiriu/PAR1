@@ -1,15 +1,15 @@
 classdef STACK
     properties
-        Top
-        Bot
-        Arm
-        Add
-        Del
-        Prec
-        Id
+        Top %Top block to which the stack operator will be applied.
+        Bot %Bottom block to which the stack operator will be applied.
+        Arm %Arm to which the stack operator will be applied.
+        Add %Add list of the operator.
+        Del %Delete list of the operator.
+        Prec %Precondition list of the operator.
+        Id %String Identifier of the Stack object.
     end
     methods (Static)
-        function obj = STACK(top,bot,arm)
+        function obj = STACK(top,bot,arm) %Function that creates an stack object.
                 obj.Id = ['STACK(' top.Name ',' bot.Name ',' arm ')'];
                 obj.Top = top;
                 obj.Bot = bot;

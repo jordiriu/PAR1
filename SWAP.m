@@ -1,14 +1,14 @@
 classdef SWAP 
     properties
-        Block
-        Arm
-        Add
-        Del
-        Prec
-        Id
+        Block %Block to which the swap operator will be applied.
+        Arm %Arm to which the swap operator will be applied. Swap(Left,Block) means that the block swaps from the left arm to the right arm.
+        Add %Add List of the operator.
+        Del %Delete List of the operator.
+        Prec %Precondition List of the operator.
+        Id %String Identifier of the swap operator.
     end
     methods (Static)
-        function obj = SWAP(arm,block)
+        function obj = SWAP(arm,block) %Function that creates a swap object.
             obj.Id = ['SWAP(' block.Name ',' arm ')'];
             obj.Arm = arm;
             obj.Block = block;

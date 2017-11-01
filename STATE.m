@@ -1,11 +1,11 @@
 classdef STATE
     properties
-        Predicates
-        Id
-        OrdId
+        Predicates %List of predicate objects of the state
+        Id %List of predicate identifiers of the state
+        OrdId %String identifier of the state that consists on the concatenation of all predicate id's in alphabetical order.
     end
     methods (Static)
-        function obj = STATE(Pred)
+        function obj = STATE(Pred) %Function that creates a State object.
             %Pred is a cell that contains all current predicate classes of the
             %state. 
             obj.Predicates = Pred;

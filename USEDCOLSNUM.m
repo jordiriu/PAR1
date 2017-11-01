@@ -1,7 +1,7 @@
 classdef USEDCOLSNUM
     properties
-        Num
-        Id
+        Num %Number of columns of the predicate.
+        Id %String Identifier of the Used Columns Number Predicate.
     end
     methods  (Static)
         function obj = USEDCOLSNUM(num)
